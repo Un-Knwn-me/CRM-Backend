@@ -89,8 +89,8 @@ router.put('/edit/:id',isSignedIn, authorizedUsers, async(req, res, next) => {
         lead.tag = updatedData.tag || lead.tag;
         lead.website = updatedData.website || lead.website;
         lead.status = updatedData.status || lead.status;
-        lead.updatedBy = updatedBy; // append the updated user
-        lead.updatedAt = Date.now(); // append the updated date and time
+        lead.updatedBy = updatedBy; 
+        lead.updatedAt = Date.now(); 
 
         await lead.save();
         

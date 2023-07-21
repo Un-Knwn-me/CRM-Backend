@@ -3,7 +3,19 @@ const { isSignedIn, authorizedUsers, roleAdmin } = require('../config/auth');
 const { ContactModel } = require('../schema/contactSchema');
 const { SaleModel } = require('../schema/saleSchema');
 var router = express.Router();
+const path = require('path');
+const multer = require('multer');
 
+const storage = multer.diskStorage({
+    destination: (req, file, callback) => {
+        callback(null, path.join(__dirname, "../public/uploads"));
+    },
+    filename: (req,file,callback) => {
+        callback(null, file.originalname);
+    }
+})
+
+const upload = multer({storage: storage});
 
 /* GET home page. */
 router.get('/list', isSignedIn, async(req, res, next) => {
@@ -31,16 +43,17 @@ router.get('/:id', isSignedIn, async(req, res)=>{
 })
 
 // Add new contact
-router.post('/add', isSignedIn, authorizedUsers, async(req, res, next) => {
+router.post('/add', isSignedIn, authorizedUsers, upload.single("image"), async(req, res, next) => {
     try {
         const existingContact = await ContactModel.findOne({ email: req.body.email });
-
+        console.log(req.body)
         if( !existingContact ) {
             const createdBy = req.user.firstName + " " + req.user.lastName;
-            let data = new ContactModel({ ...req.body, createdBy, updatedBy: "", updatedAt: "" });
+            let data = new ContactModel({ ...req.body, image: req.file.originalname, createdBy, updatedBy: "", updatedAt: "" });
             await data.save();        
             res.status(200).json({ message: "Contact added Success" });
         } else {
+            console.log(error)
             res.status(401).json({ message: "Contact already existed" });
         }
     } catch ( error) {
@@ -49,7 +62,7 @@ router.post('/add', isSignedIn, authorizedUsers, async(req, res, next) => {
 })
 
 // Update contact
-router.put('/edit/:id', isSignedIn, authorizedUsers, async(req, res, next) => {
+router.put('/edit/:id', isSignedIn, authorizedUsers,upload.single("imageName"), async(req, res, next) => {
     try {
         const { id } = req.params;
         const updatedData = req.body;
@@ -68,7 +81,7 @@ router.put('/edit/:id', isSignedIn, authorizedUsers, async(req, res, next) => {
           
         contact.fullName = updatedData.fullName || contact.fullName;
         contact.companyName = updatedData.companyName || contact.companyName;
-        contact.image = updatedData.image || contact.image;
+        contact.image = req.file.originalname || contact.image;
         contact.email = updatedData.email || contact.email;
         contact.mobile = updatedData.mobile || contact.mobile;
         contact.jobTitle = updatedData.jobTitle || contact.jobTitle;
@@ -82,8 +95,8 @@ router.put('/edit/:id', isSignedIn, authorizedUsers, async(req, res, next) => {
         contact.website = updatedData.website || contact.website;
         contact.tag = updatedData.tag || contact.tag;
         contact.status = updatedData.status || contact.status;
-        contact.updatedBy = updatedBy; // append the updated user
-        contact.updatedAt = Date.now(); // append the updated date and time
+        contact.updatedBy = updatedBy; 
+        contact.updatedAt = Date.now();
 
         await contact.save();
         

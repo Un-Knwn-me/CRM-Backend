@@ -20,6 +20,27 @@ const userSchema = new mongoose.Schema({
     password:{
         type: String
     },
+    image:{
+        type: String
+    },
+    mobile:{
+        type: Number
+    },
+    address: {
+        type: String
+    },
+    city: {
+        type: String
+    },
+    state: {
+        type: String
+    },
+    country: {
+        type: String
+    },
+    pincode: {
+        type: Number
+    },
     resetlink:{
         type: String,
         default: ''
@@ -43,6 +64,13 @@ const userSchema = new mongoose.Schema({
     },
     createdBy:{
         type: String
+    },
+    updatedBy:{
+        type: String
+    },
+    updatedAt:{
+        type: Date,
+        default: Date.now()
     }
 }, {versionKey: false, collection:"user"})
 

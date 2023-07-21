@@ -4,14 +4,28 @@ const { UserModel } = require('../schema/userSchema');
 const { hashCompare, hashPassword, createToken, adminManager, isSignedIn, roleAdmin } = require('../config/auth');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+const path = require('path');
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+    destination: (req, file, callback) => {
+        callback(null, path.join(__dirname, "../public/uploads"));
+    },
+    filename: (req,file,callback) => {
+        callback(null, file.originalname);
+    }
+})
+
+const upload = multer({storage: storage});
+
 
 let fe_url = "http://localhost:3000/register"
 
 /* GET users listing. */
 router.get('/list', isSignedIn, async (req, res)=>{
   try {
-    const user = await UserModel.find({}).sort({ firstName: 1 });
-      res.status(200).json({ message: "The Users list are:", user, count: user.length });
+    const users = await UserModel.find({}).sort({ firstName: 1 });
+      res.status(200).json({ message: "The Users list are:", users, count: users.length });
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: "Internal Server Error", error });
@@ -19,19 +33,18 @@ router.get('/list', isSignedIn, async (req, res)=>{
 });
 
 // signup user
-router.post("/signup", async (req, res)=>{
+router.post("/signup", upload.single("image"), async (req, res)=>{
   try {
     let user = await UserModel.findOne({email: req.body.email})
-
+    console.log(req.body)
     if(!user){
       req.body.password = await hashPassword(req.body.password);
-      let data = new UserModel(req.body);
+      let data = new UserModel({ ...req.body, image: req.file.originalname, updatedBy: "", updatedAt: "" });
       await data.save();
       res.status(200).json({message: "User signed up successfully"});
     } else {
       res.status(401).json({message: "User already exists"});
-    }
-    
+    }    
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: "Internal Server Error", error });
@@ -44,7 +57,7 @@ router.post('/signin', async (req, res) => {
     let user = await UserModel.findOne({email: req.body.email})
       if(user){
           if(await hashCompare(req.body.password, user.password)){
-              let token = await createToken({email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role})
+              let token = createToken({ email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role })
 
               res.status(200).send({message: "User successfully logged in", token, role:user.role});
           } else {

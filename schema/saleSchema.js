@@ -7,6 +7,10 @@ const saleSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    contactName: {
+        type: String,
+        required: true
+    },
     amount: {
         type: Number,
         required: true,

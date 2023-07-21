@@ -48,8 +48,11 @@ const serviceSchema = new mongoose.Schema({
     },
     status:{
         type: String,
-        enum: ['Created', 'Released', 'Open', 'Cancelled', 'In process', 'Completed'], //expected values
+        enum: ['Created', 'Released', 'Open', 'Canceled', 'In process', 'Completed'],
         default: "Created"
+    },
+    description: {
+        type: String
     },
     createdBy:{
         type: String,

@@ -31,7 +31,7 @@ router.get('/:id', isSignedIn, async(req, res)=>{
 router.post('/add',isSignedIn, authorizedUsers, async(req, res, next) => {
     try {
         const existingService = await ServiceModel.findOne({ email: req.body.email });
-
+        console.log(req.body)
         if( !existingService ) {
             const createdBy = req.user.firstName + " " + req.user.lastName;
             let data = new ServiceModel({ ...req.body, createdBy, updatedBy: "", updatedAt: "" });
@@ -41,6 +41,7 @@ router.post('/add',isSignedIn, authorizedUsers, async(req, res, next) => {
             res.status(401).json({ message: "Service already existed" });
         }
     } catch (error) {
+        console.log("error")
         res.status(500).send({message:"Internal Server Error",error});  
     }
 })
@@ -75,8 +76,8 @@ router.put('/edit/:id',isSignedIn, authorizedUsers, async(req, res, next) => {
         service.tag = updatedData.tag || service.tag;
         service.industry = updatedData.industry || service.industry;
         service.status = updatedData.status || service.status;
-        service.updatedBy = updatedBy; // append the updated user
-        service.updatedAt = Date.now(); // append the updated date and time
+        service.updatedBy = updatedBy; 
+        service.updatedAt = Date.now(); 
 
         await service.save();
 

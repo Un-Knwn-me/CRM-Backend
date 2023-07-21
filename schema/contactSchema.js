@@ -10,8 +10,7 @@ const contactSchema = new mongoose.Schema({
         type: String
     },
     image:{
-        data: Buffer,
-        contentType: String
+        type: String
     },
     email:{
         type: String,
@@ -50,11 +49,12 @@ const contactSchema = new mongoose.Schema({
     },
     gstin: {
         type: String
-    },
+    }, 
     website: {
         type: String,
-        validate:(value)=>validator.isURL(value, {protocols: ['http', 'https']})
-    },
+        trim: true,
+        default: ''
+      },
     tag:{
         type: String,
         default: ''

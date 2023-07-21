@@ -12,12 +12,51 @@ router.get('/list', isSignedIn, async(req, res)=> {
     try {
         let data = await SaleModel.find({}).sort({ createdAt: 1 });
         const totalAmount = data.reduce((sum, sale) => sum + sale.amount, 0);
-        res.status(200).json({ sales: data, count: data.length, totalAmount });
+
+        let pending = await ContactModel.find({});
+        const pendingAmount = pending.reduce((sum, pending) => sum + pending.pendingPayment, 0);
+
+        res.status(200).json({ sales: data, count: data.length, totalAmount, pendingAmount });
     } catch (error) {
         console.log(error);
         res.status(500).send({message:"Internal Server Error",error});  
     }
-})
+});
+
+// Get data based on month
+router.get('/list/:year/:month', isSignedIn, async (req, res) => {
+  try {
+    const { year, month } = req.params;
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+
+    const data = await SaleModel.find({ createdAt: { $gte: startDate, $lte: endDate } }).sort({ fullName: 1 });
+    const totalAmount = data.reduce((sum, sale) => sum + sale.amount, 0);
+    
+    res.status(200).json({ sales: data, count: data.length, totalAmount });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Internal Server Error", error });
+  }
+});
+
+// Get data based on year
+router.get('/list/:year', isSignedIn, async (req, res) => {
+  try {
+    const { year } = req.params;
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year, 12 -1, 31);
+
+    const data = await SaleModel.find({ createdAt: { $gte: startDate, $lte: endDate } }).sort({ fullName: 1 });
+    const totalAmount = data.reduce((sum, lead) => sum + lead.amount, 0);
+
+    res.status(200).json({ sales: data, count: data.length, totalAmount });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Internal Server Error", error });
+  }
+});
+
 
 // Get sales history of a contact
 router.get('/salesHistory/:contactId',isSignedIn, async(req, res, next) => {
@@ -47,12 +86,13 @@ router.post('/add', isSignedIn, authorizedUsers, async (req, res, next) => {
   
       // Verifying Contact 
       const contact = await ContactModel.findById(contactId);
+      const contactName = contact.fullName;
       if (!contact) {
         return res.status(404).json({ message: 'Contact not found, add contact' });
       }
   
       // Generating Sales
-      let sale = new SaleModel({ contactId, amount, paymentStatus, createdBy, updatedBy: '', updatedAt: '', ...req.body });
+      let sale = new SaleModel({ ...req.body, contactId, contactName, amount, paymentStatus, createdBy, updatedBy: '', updatedAt: '' });
       await sale.save();
   
       // Update the pending payment in the contact
@@ -60,7 +100,7 @@ router.post('/add', isSignedIn, authorizedUsers, async (req, res, next) => {
         contact.pendingPayment += sale.amount; 
       }
   
-      await contact.save(); // Save the updated contact
+      await contact.save(); 
   
       res.status(200).json({ message: 'Sales Generated Successfully', sale });
     } catch (error) {
