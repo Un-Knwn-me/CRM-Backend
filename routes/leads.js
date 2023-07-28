@@ -2,6 +2,19 @@ var express = require('express');
 const { isSignedIn, authorizedUsers, roleAdmin } = require('../config/auth');
 const { LeadModel } = require('../schema/leadsSchema');
 var router = express.Router();
+const path = require('path');
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+    destination: (req, file, callback) => {
+        callback(null, path.join(__dirname, "../public/uploads"));
+    },
+    filename: (req,file,callback) => {
+        callback(null, file.originalname);
+    }
+})
+
+const upload = multer({storage: storage});
 
 /* GET home page. */
 router.get('/list', isSignedIn, async(req, res, next) => {
@@ -18,9 +31,9 @@ router.get('/list', isSignedIn, async(req, res, next) => {
 router.get('/:id', isSignedIn, async(req, res)=>{
     try {
         const { id } = req.params;
-        let data = await LeadModel.findById(id);
+        let lead = await LeadModel.findById(id);
 
-        res.status(200).json({ leads: data });
+        res.status(200).json( lead );
     } catch (error) {
         console.log(error);
         res.status(500).json({ message:"Internal Server Error", error });
@@ -60,7 +73,7 @@ router.post('/add',isSignedIn, authorizedUsers, async(req, res, next) => {
 })
 
 // Update a lead
-router.put('/edit/:id',isSignedIn, authorizedUsers, async(req, res, next) => {
+router.put('/edit/:id',isSignedIn, authorizedUsers, upload.none(), async(req, res, next) => {
     try {
         const { id } = req.params;
         const updatedData = req.body;
@@ -86,9 +99,10 @@ router.put('/edit/:id',isSignedIn, authorizedUsers, async(req, res, next) => {
         lead.state = updatedData.state || lead.state;
         lead.country = updatedData.country || lead.country;
         lead.pincode = updatedData.pincode || lead.pincode;
-        lead.tag = updatedData.tag || lead.tag;
+        lead.type = updatedData.type || lead.type;
         lead.website = updatedData.website || lead.website;
         lead.status = updatedData.status || lead.status;
+        lead.description = updatedData.description || lead.description;
         lead.updatedBy = updatedBy; 
         lead.updatedAt = Date.now(); 
 

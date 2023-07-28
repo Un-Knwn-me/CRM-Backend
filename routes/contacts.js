@@ -46,7 +46,7 @@ router.get('/:id', isSignedIn, async(req, res)=>{
 router.post('/add', isSignedIn, authorizedUsers, upload.single("image"), async(req, res, next) => {
     try {
         const existingContact = await ContactModel.findOne({ email: req.body.email });
-        console.log(req.body)
+        
         if( !existingContact ) {
             const createdBy = req.user.firstName + " " + req.user.lastName;
             let data = new ContactModel({ ...req.body, image: req.file.originalname, createdBy, updatedBy: "", updatedAt: "" });
@@ -62,7 +62,7 @@ router.post('/add', isSignedIn, authorizedUsers, upload.single("image"), async(r
 })
 
 // Update contact
-router.put('/edit/:id', isSignedIn, authorizedUsers,upload.single("imageName"), async(req, res, next) => {
+router.put('/edit/:id', isSignedIn, authorizedUsers,upload.single("image"), async(req, res, next) => {
     try {
         const { id } = req.params;
         const updatedData = req.body;
@@ -78,10 +78,12 @@ router.put('/edit/:id', isSignedIn, authorizedUsers,upload.single("imageName"), 
             return res.status(404).json({ message: "Contact not found" });
           }
 
-          
+          if (req.file) {
+            contact.image = req.file.originalname || contact.image;
+          } 
+        contact.type = updatedData.type || contact.type;
         contact.fullName = updatedData.fullName || contact.fullName;
         contact.companyName = updatedData.companyName || contact.companyName;
-        contact.image = req.file.originalname || contact.image;
         contact.email = updatedData.email || contact.email;
         contact.mobile = updatedData.mobile || contact.mobile;
         contact.jobTitle = updatedData.jobTitle || contact.jobTitle;
@@ -94,7 +96,6 @@ router.put('/edit/:id', isSignedIn, authorizedUsers,upload.single("imageName"), 
         contact.gstin = updatedData.gstin || contact.gstin;
         contact.website = updatedData.website || contact.website;
         contact.tag = updatedData.tag || contact.tag;
-        contact.status = updatedData.status || contact.status;
         contact.updatedBy = updatedBy; 
         contact.updatedAt = Date.now();
 

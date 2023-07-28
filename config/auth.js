@@ -14,8 +14,8 @@ require('dotenv').config();
   return bcrypt.compare(password,hash);
 }
 
- const createToken = ({firstName, lastName, email, role})=>{
-  let token = jwt.sign({firstName, lastName, email, role}, process.env.SecretKey, {expiresIn: "60m"});
+ const createToken = ({firstName, lastName, email, role, image})=>{
+  let token = jwt.sign({firstName, lastName, email, role, image}, process.env.SecretKey, {expiresIn: "60m"});
   return token;
 }
 

@@ -59,10 +59,13 @@ const contactSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
-    status:{
+    type:{
         type: String,
         enum: ['Individual', 'Company'],
-        default: "Individual"
+    },
+    totalPayment: {
+        type: Number,
+        default: 0
     },
     paymentStatus: {
         type: String,

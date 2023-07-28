@@ -40,18 +40,16 @@ const leadSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    tag:{
+    type:{
         type: String,
-        enum: ['Company', 'Individual'],
-        default: "Company"
+        enum: ['Company', 'Individual']
     },
     industry: {
         type: String
     },
     status:{
         type: String,
-        enum: ['New', 'Lost', 'Contacted', 'Canceled', 'Qualified', 'Confirmed'], 
-        default: "New"
+        enum: ['New', 'Lost', 'Contacted', 'Canceled', 'Qualified', 'Confirmed']
     },
     description: {
         type: String

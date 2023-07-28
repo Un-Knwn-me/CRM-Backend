@@ -97,7 +97,8 @@ router.post('/add', isSignedIn, authorizedUsers, async (req, res, next) => {
   
       // Update the pending payment in the contact
       if (sale.paymentStatus === 'Pending') {
-        contact.pendingPayment += sale.amount; 
+        contact.pendingPayment += sale.amount;
+        contact.totalPayment += sale.amount; 
       }
   
       await contact.save(); 

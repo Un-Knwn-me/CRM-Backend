@@ -38,18 +38,16 @@ const serviceSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    tag:{
+    type:{
         type: String,
-        enum: ['Company', 'Individual'],
-        default: "Company"
+        enum: ['Company', 'Individual']
     },
     industry: {
         type: String
     },
     status:{
         type: String,
-        enum: ['Created', 'Released', 'Open', 'Canceled', 'In process', 'Completed'],
-        default: "Created"
+        enum: ['Created', 'Released', 'Open', 'Canceled', 'In process', 'Completed']
     },
     description: {
         type: String

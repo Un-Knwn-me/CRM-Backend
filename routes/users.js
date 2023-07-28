@@ -32,6 +32,19 @@ router.get('/list', isSignedIn, async (req, res)=>{
   }
 });
 
+// Get user by id
+router.get('/:id', isSignedIn, async(req, res)=>{
+  try {
+      const { id } = req.params;
+      let user = await UserModel.findById(id);
+
+      res.status(200).json({ user });
+  } catch (error) {
+      console.log(error);
+      res.status(500).json({ message:"Internal Server Error", error });
+  }
+})
+
 // signup user
 router.post("/signup", upload.single("image"), async (req, res)=>{
   try {
@@ -57,7 +70,7 @@ router.post('/signin', async (req, res) => {
     let user = await UserModel.findOne({email: req.body.email})
       if(user){
           if(await hashCompare(req.body.password, user.password)){
-              let token = createToken({ email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role })
+              let token = createToken({ email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role, image: user.image })
 
               res.status(200).send({message: "User successfully logged in", token, role:user.role});
           } else {
@@ -199,6 +212,50 @@ router.post("/add", isSignedIn, adminManager, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal Server Error", error });
+  }
+});
+
+
+// Update user
+router.put('/edit/:id', isSignedIn, adminManager, upload.single("image"), async(req, res, next) => {
+  try {
+      const { id } = req.params;
+      const updatedData = req.body;
+      console.log(req.body.type)
+      const updatedBy = req.user.firstName + " " + req.user.lastName;
+
+      if (!id || !updatedData) {
+          return res.status(404).json({ message: "Bad Request or no Data had passed" });
+        }
+
+      let user = await UserModel.findById(id);
+
+      if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        if (req.file) {
+          user.image = req.file.originalname || user.image;
+        } 
+      user.role = updatedData.role || user.role;
+      user.firstName = updatedData.firstName || user.firstName;
+      user.lastName = updatedData.lastName || user.lastName;
+      user.email = updatedData.email || user.email;
+      user.mobile = updatedData.mobile || user.mobile;
+      user.address = updatedData.address || user.address;
+      user.city = updatedData.city || user.city;
+      user.state = updatedData.state || user.state;
+      user.country = updatedData.country || user.country;
+      user.pincode = updatedData.pincode ||user.pincode;
+      user.updatedBy = updatedBy; 
+      user.updatedAt = Date.now();
+
+      await user.save();
+      
+      res.status(200).json({message:"User updated Success"});
+  } catch (error) {
+      console.log(error)
+      res.status(500).send({message:"Internal Server Error",error});
   }
 });
 
