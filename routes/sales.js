@@ -40,9 +40,9 @@ router.get('/list', isSignedIn, async(req, res)=> {
 router.get('/:id', isSignedIn, async(req, res)=>{
   try {
       const { id } = req.params;
-      let lead = await SaleModel.findById(id);
+      let sales = await SaleModel.findById(id);
 
-      res.status(200).json( sales );``
+      res.status(200).json( sales );
   } catch (error) {
       console.log(error);
       res.status(500).json({ message:"Internal Server Error", error });
