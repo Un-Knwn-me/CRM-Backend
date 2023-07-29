@@ -5,6 +5,19 @@ const { isSignedIn, authorizedUsers } = require('../config/auth');
 const { SaleModel } = require('../schema/saleSchema');
 const { ContactModel } = require('../schema/contactSchema');
 var router = express.Router();
+const path = require('path');
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+    destination: (req, file, callback) => {
+        callback(null, path.join(__dirname, "../public/uploads"));
+    },
+    filename: (req,file,callback) => {
+        callback(null, file.originalname);
+    }
+})
+
+const upload = multer({storage: storage});
 
 
 // Get all sales history
@@ -22,6 +35,19 @@ router.get('/list', isSignedIn, async(req, res)=> {
         res.status(500).send({message:"Internal Server Error",error});  
     }
 });
+
+// Get sale by id
+router.get('/:id', isSignedIn, async(req, res)=>{
+  try {
+      const { id } = req.params;
+      let lead = await SaleModel.findById(id);
+
+      res.status(200).json( sales );``
+  } catch (error) {
+      console.log(error);
+      res.status(500).json({ message:"Internal Server Error", error });
+  }
+})
 
 // Get data based on month
 router.get('/list/:year/:month', isSignedIn, async (req, res) => {
@@ -124,7 +150,7 @@ router.get('/pendingPayments',isSignedIn, async(req, res, next) => {
 });
 
 // Update payment
-router.put('/updatePayment/:id', isSignedIn, async(req, res, next) => {
+router.put('/updatePayment/:id', isSignedIn, upload.none(), async(req, res, next) => {
     try {
         const { firstName, lastName } = req.user;
       const updatedBy = `${firstName} ${lastName}`;
