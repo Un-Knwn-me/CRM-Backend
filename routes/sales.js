@@ -154,9 +154,12 @@ router.put('/updatePayment/:id', isSignedIn, upload.none(), async(req, res, next
     try {
         const { firstName, lastName } = req.user;
       const updatedBy = `${firstName} ${lastName}`;
-      const { contactId, paymentAmount } = req.body;
+      const { contactId, paymentAmount, paymentStatus } = req.body;
       const { id } = req.params;
 
+      if( paymentStatus != "Paid" ){
+        return res.status(404).json({message: 'Payment not completed'});
+      }
         // find the contact details
         const contact = await ContactModel.findById(contactId);
         if (!contact) {
@@ -178,7 +181,8 @@ router.put('/updatePayment/:id', isSignedIn, upload.none(), async(req, res, next
         await contact.save();
 
         res.status(200).json({ message: 'Payment details updated successfully' });
-    } catch (error) {
+
+      } catch (error) {
         console.log(error);
         res.status(500).send({message:"Internal Server Error",error});          
     }

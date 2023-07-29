@@ -9,7 +9,6 @@ const saleSchema = new mongoose.Schema({
     },
     contactName: {
         type: String,
-        required: true
     },
     amount: {
         type: Number,
