@@ -16,14 +16,12 @@ const saleSchema = new mongoose.Schema({
     },
     productName: {
         type: String,
-        required: true,
     },
     productType: {
         type: String
     },
     quantity: {
         type: String,
-        required: true,
     },
     paymentStatus: {
         type: String,

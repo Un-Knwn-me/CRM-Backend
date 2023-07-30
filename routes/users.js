@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 const upload = multer({storage: storage});
 
 
-let fe_url = "http://localhost:3000/register"
+let fe_url = "https://crm-zen.netlify.app"
 
 /* GET users listing. */
 router.get('/list', isSignedIn, async (req, res)=>{

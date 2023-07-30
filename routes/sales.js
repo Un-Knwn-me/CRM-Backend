@@ -150,12 +150,17 @@ router.get('/pendingPayments',isSignedIn, async(req, res, next) => {
 });
 
 // Update payment
-router.put('/updatePayment/:id', isSignedIn, upload.none(), async(req, res, next) => {
+router.put('/updatePayment/:id', isSignedIn, async(req, res, next) => {
     try {
+      
         const { firstName, lastName } = req.user;
       const updatedBy = `${firstName} ${lastName}`;
-      const { contactId, paymentAmount, paymentStatus } = req.body;
+      const { contactId, amount, paymentStatus } = req.body;
       const { id } = req.params;
+
+      console.log(contactId)
+      console.log(amount)
+      console.log(paymentStatus)
 
       if( paymentStatus != "Paid" ){
         return res.status(404).json({message: 'Payment not completed'});
@@ -167,15 +172,15 @@ router.put('/updatePayment/:id', isSignedIn, upload.none(), async(req, res, next
         }
 
         // find the sale details
-    const sale = await SaleModel.findOne({ _id: id });
+    const sale = await SaleModel.findById({ _id: id });
     if (!sale) {
       return res.status(404).json({ message: 'Sale not found' });
     }
 
         // Update payment status
         sale.paymentStatus = "Paid";
-        sale.pendingPayment -= paymentAmount;
-        contact.pendingPayment -= paymentAmount;
+        sale.pendingPayment -= amount;
+        contact.pendingPayment -= amount;
 
         await sale.save();
         await contact.save();
