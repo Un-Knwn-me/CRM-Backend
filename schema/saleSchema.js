@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const validator = require('validator');
 require('dotenv').config();
 
 const saleSchema = new mongoose.Schema({

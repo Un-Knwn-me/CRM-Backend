@@ -46,18 +46,18 @@ router.get('/:id', isSignedIn, async(req, res)=>{
 })
 
 // signup user
-router.post("/signup", upload.single("image"), async (req, res)=>{
+router.post("/signup", async (req, res)=>{
   try {
     let user = await UserModel.findOne({email: req.body.email})
-    console.log(req.body)
+
     if(!user){
       req.body.password = await hashPassword(req.body.password);
-      let data = new UserModel({ ...req.body, image: req.file.originalname, updatedBy: "", updatedAt: "" });
+      let data = new UserModel(req.body);
       await data.save();
       res.status(200).json({message: "User signed up successfully"});
     } else {
       res.status(401).json({message: "User already exists"});
-    }    
+    }
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: "Internal Server Error", error });
@@ -161,24 +161,16 @@ router.post('/reset-password/:token', async (req, res) => {
 });
 
 // Add new user
-router.post("/add", isSignedIn, adminManager, async (req, res) => {
+router.post("/add", isSignedIn, adminManager, upload.single("image"), async (req, res) => {
   try {
-    let stud = await UserModel.findOne({ email: req.body.email });
-    let stuemail = req.body.email;
-
-    if (!stud) {
-      const createdBy = req.user.firstName + ' ' + req.user.lastName;
-      let token = Math.random().toString(36).slice(-8); // Initialize token here
-      let data = new UserModel({ 
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-          email: req.body.email,
-          password: req.body.password,
-          role: req.body.role,
-          resetlink: token,
-          createdBy,
-          resetExpiresAt: Date.now() + 360000 });
+    const pass = req.body.password;
+    let user = await UserModel.findOne({email: req.body.email})
+    console.log(req.body)
+    if(!user){
+      req.body.password = await hashPassword(req.body.password);
+      let data = new UserModel({ ...req.body, image: req.file.originalname, updatedBy: "", updatedAt: "" });
       await data.save();
+      res.status(200).json({message: "User signed up successfully"});
 
       const transporter = nodemailer.createTransport({
           service: 'gmail',
@@ -193,8 +185,8 @@ router.post("/add", isSignedIn, adminManager, async (req, res) => {
         to: stuemail,
         subject: "password for zen account",
         text: `Dear ${data.fullName}, 
-        The Credential for your Zen account can be set through the following link: 
-        ${fe_url}/reset-password/${data.id}/${token}`,
+        The Credential for your Zen account is given below: 
+        ${pass}`,
       };
 
       transporter.sendMail(message, (error, info) => {

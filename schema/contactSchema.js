@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const validator = require('validator');
 require('dotenv').config();
 
 const contactSchema = new mongoose.Schema({
@@ -15,8 +14,6 @@ const contactSchema = new mongoose.Schema({
     email:{
         type: String,
         lowercase: true,
-        required: true,
-        validate:(value)=>validator.isEmail(value)
     },
     mobile:{
         type: Number,
